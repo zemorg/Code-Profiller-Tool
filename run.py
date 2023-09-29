@@ -17,7 +17,8 @@ library_path = "/home/zemor/papi-7.0.1/src"
 library_name = "/home/zemor/papi-7.0.1/src/libpapi.a"  # Replace with the actual library name
 
 def compile_and_run_with_timing(filename, num_loops, event):
-    compile_command = ["gcc", "-g", "-Wall", f"-I{library_path}", filename, library_name, "-o", "temp", "-lm"]
+    fileandpath = "./CodeExamples/" + filename
+    compile_command = ["gcc", "-g", "-Wall", f"-I{library_path}", fileandpath, library_name, "-o", "temp", "-lm"]
 
     if subprocess.run(compile_command).returncode != 0:
         print("Compilation failed.")
@@ -50,7 +51,7 @@ def main():
     num_files = 0
 
     # Automatically scan and list C code files in the current directory
-    for entry in os.listdir("."):
+    for entry in os.listdir("./CodeExamples"):
         if num_files < MAX_FILES and entry.endswith(".c") and entry != "run.c":
             filenames.append(entry)
             num_files += 1
