@@ -1,9 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <papi.h>
-#include <stdbool.h>
-#include <math.h>
+#include <time.h>
 #include <string.h>
+#include <papi.h>
+
+struct Data {
+    int integer;
+    float floating;
+    char character;
+};
 
 // Function to read the TSC (Time Stamp Counter)
 unsigned long long rdtsc() {
@@ -19,13 +24,15 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    int numLoops = atoi(argv[1]);
+    int size = atoi(argv[1]);
     char PAPI_Event[256];
     strcpy(PAPI_Event, argv[2]);
-    
 
-    double x = 5.0;
-    
+    //initalize stuff
+    struct Data* data_array = (struct Data*)malloc(size * sizeof(struct Data));
+
+    srand(time(NULL));
+
     // Measure execution time
     unsigned long long start_cycles, end_cycles;
     int eventset = PAPI_NULL;
@@ -45,8 +52,11 @@ int main(int argc, char *argv[]) {
     start_cycles = rdtsc();
 
     //START ACTUAL CODE
-    for (int i = 0; i < numLoops; i++) {
-        double square2 = pow(x, 2);
+    // Generate and store random values in the struct array
+    for (int i = 0; i < size; i++) {
+        data_array[i].integer = rand() % 100;
+        data_array[i].floating = (float)rand() / RAND_MAX * 100.0;
+        data_array[i].character = 'A' + (rand() % 26);
     }
     //END ACTUAL CODE
 
@@ -61,7 +71,14 @@ int main(int argc, char *argv[]) {
     if (strcmp(PAPI_Event, "none") != 0){
         printf("%lld\n", values[0]);}
 
+    //printf("Array:\n");
+    //for (int i = 0; i < size; i++) {
+    //    printf("(%d, %.2f, %c) ", data_array[i].integer, data_array[i].floating, data_array[i].character);
+    //}
+    //printf("\n");
 
+    // Don't forget to free the allocated memory when done
+    free(data_array);
 
     return 0;
 }

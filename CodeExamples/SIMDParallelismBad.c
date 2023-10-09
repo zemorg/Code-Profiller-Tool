@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <papi.h>
 #include <stdbool.h>
-#include <math.h>
 #include <string.h>
 
 // Function to read the TSC (Time Stamp Counter)
@@ -13,19 +12,21 @@ unsigned long long rdtsc() {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc != 3) {
+        if (argc != 3) {
         printf("Usage: %s <number_loops>\n", argv[0]);
         printf("Usage: %s <PAPI_EVENT>\n", argv[1]);
         return 1;
     }
 
-    int numLoops = atoi(argv[1]);
+    int ARRAY_SIZE = atoi(argv[1]);
     char PAPI_Event[256];
     strcpy(PAPI_Event, argv[2]);
-    
 
-    double x = 5.0;
-    
+    //INITIALIZE STUFF
+    float *a = (float*)malloc(sizeof(float) * ARRAY_SIZE);
+    float *b = (float*)malloc(sizeof(float) * ARRAY_SIZE);
+    float *result = (float*)malloc(sizeof(float) * ARRAY_SIZE);
+
     // Measure execution time
     unsigned long long start_cycles, end_cycles;
     int eventset = PAPI_NULL;
@@ -45,8 +46,8 @@ int main(int argc, char *argv[]) {
     start_cycles = rdtsc();
 
     //START ACTUAL CODE
-    for (int i = 0; i < numLoops; i++) {
-        double square2 = pow(x, 2);
+    for (int i = 0; i < ARRAY_SIZE; i++) {
+        result[i] = a[i] + b[i];
     }
     //END ACTUAL CODE
 
@@ -61,7 +62,9 @@ int main(int argc, char *argv[]) {
     if (strcmp(PAPI_Event, "none") != 0){
         printf("%lld\n", values[0]);}
 
-
+    free(a);
+    free(b);
+    free(result);
 
     return 0;
 }

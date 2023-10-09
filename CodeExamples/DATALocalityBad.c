@@ -2,13 +2,7 @@
 #include <stdlib.h>
 #include <papi.h>
 #include <stdbool.h>
-
-char PAPI_EVENTS[4][256] = {
-        "PAPI_L1_DCM",
-        "PAPI_TOT_CYC",
-        "PAPI_TOT_INS",
-        "TSC"
-    };
+#include <string.h>
 
 // Function to read the TSC (Time Stamp Counter)
 unsigned long long rdtsc() {
@@ -19,21 +13,14 @@ unsigned long long rdtsc() {
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
-        printf("Usage: %s <array_size>\n", argv[0]);
-        printf("Usage: %s <PAPI_event_number>\n", argv[1]);
+        printf("Usage: %s <Array_Size>\n", argv[0]);
+        printf("Usage: %s <PAPI_EVENT>\n", argv[1]);
         return 1;
     }
 
-    // Convert the command-line argument to an integer
     int ARRAY_SIZE = atoi(argv[1]);
-    int PAPI_Event = atoi(argv[2]);
-    if (ARRAY_SIZE <= 0) {
-        printf("Invalid array size. Please provide a positive integer.\n");
-        return 1;
-    }
-    if (PAPI_Event < 0 || PAPI_Event > 3){
-        fprintf (stderr, "Incorrect Event Number");
-    }
+    char PAPI_Event[256];
+    strcpy(PAPI_Event, argv[2]);
 
     int cols = 16;
 
@@ -51,38 +38,19 @@ int main(int argc, char *argv[]) {
 
     // Measure execution time
     unsigned long long start_cycles, end_cycles;
-
-    //PAPI INITIALIZATION
-    int retval, eventset = PAPI_NULL;
+    int eventset = PAPI_NULL;
     long_long values[1] = {(long_long) 0};
+    //PAPI INITIALIZATION
+    if (strcmp(PAPI_Event, "none") != 0){
+    
+        PAPI_library_init(PAPI_VER_CURRENT);
+        PAPI_create_eventset(&eventset);
+        PAPI_add_named_event(eventset, PAPI_Event);
 
-    if (PAPI_Event != 3){
-    retval=PAPI_library_init(PAPI_VER_CURRENT);
-        if (retval!=PAPI_VER_CURRENT) {
-                fprintf(stderr,"Error initializing PAPI! %s\n",
-                        PAPI_strerror(retval));
-                return 0;
-        }
-
-	retval=PAPI_create_eventset(&eventset);
-	if (retval!=PAPI_OK) {
-	   fprintf(stderr,"Error creating eventset! %s\n",
-		PAPI_strerror(retval));
-	}
-
-	retval=PAPI_add_named_event(eventset, PAPI_EVENTS[PAPI_Event]);
-	if (retval!=PAPI_OK) {
-		fprintf(stderr,"Error adding PAPI_L1_DCM: %s\n",
-		PAPI_strerror(retval));
-	}
-
-    //START COUNTING
-    PAPI_reset(eventset);
-    retval=PAPI_start(eventset);
-    if (retval!=PAPI_OK) {
-        fprintf(stderr,"Error starting COUNTING: %s\n",
-        PAPI_strerror(retval));
-    }}
+        //START COUNTING
+        PAPI_reset(eventset);
+        PAPI_start(eventset);
+    }
 
     start_cycles = rdtsc();
 
@@ -94,16 +62,16 @@ int main(int argc, char *argv[]) {
     }
     //END ACTUAL CODE
 
-    end_cycles = rdtsc();
-
     //STOP COUNTING
-    if (PAPI_Event != 3){
-        retval=PAPI_stop(eventset,values);
-    
-        printf("%lld\n", values[0]);}
-    else{
-        printf("%llu\n", end_cycles - start_cycles);
+    end_cycles = rdtsc();
+    if (strcmp(PAPI_Event, "none") != 0){
+        PAPI_stop(eventset,values);
     }
+    
+    //RETURN RESULTS
+    printf("%llu\n", end_cycles - start_cycles);
+    if (strcmp(PAPI_Event, "none") != 0){
+        printf("%lld\n", values[0]);}
 
     // Free allocated memory
     for (int i = 0; i < ARRAY_SIZE; i++) {

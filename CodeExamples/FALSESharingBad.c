@@ -3,19 +3,11 @@
 #include <pthread.h>
 #include <papi.h>
 #include <stdbool.h>
+#include <string.h>
 
 #define NUM_THREADS 6
-long NUM_ITERATIONS;
-
-char PAPI_EVENTS[4][256] = {
-        "PAPI_L1_DCM",
-        "PAPI_TOT_CYC",
-        "PAPI_TOT_INS",
-        "TSC"
-    };
-
-int PAPI_Event;
-int retval;
+char PAPI_Event[256];
+long numLoops;
 
 // Function to read the TSC (Time Stamp Counter)
 unsigned long long rdtsc() {
@@ -31,96 +23,66 @@ void *thread_function( void *args )
     long i;
     long j = (long)args;
 
-    // Measure execution cycles
+    // Measure execution time
     unsigned long long start_cycles, end_cycles;
-
-    //PAPI INITIALIZATION
-    int eventset=PAPI_NULL;
+    int eventset = PAPI_NULL;
     long_long values[1] = {(long_long) 0};
+    //PAPI INITIALIZATION
+    if (strcmp(PAPI_Event, "none") != 0){
+    
+        PAPI_create_eventset(&eventset);
+        PAPI_add_named_event(eventset, PAPI_Event);
 
-    if (PAPI_Event != 3){
-    retval = PAPI_register_thread(  );
-    if ( retval != PAPI_OK ) {
-        printf("Thread register fail\n");
-    }
-
-    retval=PAPI_create_eventset(&eventset);
-    if (retval!=PAPI_OK) {
-        fprintf(stderr,"Error creating eventset! %s\n",
-        PAPI_strerror(retval));
-    }
-
-    retval=PAPI_add_named_event(eventset, PAPI_EVENTS[PAPI_Event]);
-    if (retval!=PAPI_OK) {
-        fprintf(stderr,"Error adding PAPI_L1_DCM: %s\n",
-        PAPI_strerror(retval));
-    }
-
-    //START COUNTING
-    PAPI_reset(eventset);
-    retval=PAPI_start(eventset);
-    if (retval!=PAPI_OK) {
-        fprintf(stderr,"Error starting COUNTING: %s\n",
-        PAPI_strerror(retval));
-    }
+        //START COUNTING
+        PAPI_reset(eventset);
+        PAPI_start(eventset);
     }
 
     start_cycles = rdtsc();
 
     //START ACTUAL CODE
-    for ( i = 0; i < NUM_ITERATIONS; i++ )
+    for ( i = 0; i < numLoops; i++ )
     {
         data[j] = i;
     }
     //END ACTUAL CODE
 
-    //FINISH COUNTING
+    //STOP COUNTING
     end_cycles = rdtsc();
-
-    if (PAPI_Event != 3){
-        retval=PAPI_stop(eventset,values);
+    if (strcmp(PAPI_Event, "none") != 0){
+        PAPI_stop(eventset,values);
     }
-
-    //PRINT RESULTS
-    if (PAPI_Event == 3){
-        printf("%llu\n", end_cycles - start_cycles);
-    }else{
-        printf("%lld\n", values[0]);
-    }
+    
+    //RETURN RESULTS
+    printf("%llu\n", end_cycles - start_cycles);
+    if (strcmp(PAPI_Event, "none") != 0){
+        printf("%lld\n", values[0]);}
 
     return NULL;
 }
 
 
 int main(int argc, char* argv[]) {
-    //GET CONTROL VARIABLES
     if (argc != 3) {
-        printf("Usage: %s <array_size>\n", argv[0]);
-        printf("Usage: %s <PAPI_event_number>\n", argv[1]);
+        printf("Usage: %s <number_loops>\n", argv[0]);
+        printf("Usage: %s <PAPI_EVENT>\n", argv[1]);
         return 1;
     }
-    NUM_ITERATIONS = atoi(argv[1]);
-    PAPI_Event = atoi(argv[2]);
+
+    numLoops = atoi(argv[1]);
+    strcpy(PAPI_Event, argv[2]);
 
     //INITIALIZE STUFF
     long i;
     pthread_t ids[NUM_THREADS];
     double d;
-
-    retval=PAPI_library_init(PAPI_VER_CURRENT);
-        if (retval!=PAPI_VER_CURRENT) {
-                fprintf(stderr,"Error initializing PAPI! %s\n",
-                        PAPI_strerror(retval));
-                return 0;
-        }
-
     data = (long*)malloc( sizeof(long)*NUM_THREADS );
 
-    retval = PAPI_thread_init( ( unsigned long ( * )( void ) )
-				   ( pthread_self ) );
-	if ( retval != PAPI_OK ) {
-		fprintf(stderr, "Error initializing threads");
-	}
+    //INITIALIZE PAPI
+    if (strcmp(PAPI_Event, "none") != 0){
+        PAPI_library_init(PAPI_VER_CURRENT);
+        PAPI_thread_init( ( unsigned long ( * )( void ) ) ( pthread_self ) );
+    }
 
     //FILL DATA ARRAY
     for ( i = 0; i < NUM_THREADS; i++ )

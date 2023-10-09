@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <papi.h>
-#include <stdbool.h>
-#include <math.h>
 #include <string.h>
+#include <papi.h>
 
 // Function to read the TSC (Time Stamp Counter)
 unsigned long long rdtsc() {
@@ -22,11 +20,11 @@ int main(int argc, char *argv[]) {
     int numLoops = atoi(argv[1]);
     char PAPI_Event[256];
     strcpy(PAPI_Event, argv[2]);
-    
 
-    double x = 5.0;
-    
-    // Measure execution time
+
+    unsigned long sum = 0;  // Appropriate data type
+
+     // Measure execution time
     unsigned long long start_cycles, end_cycles;
     int eventset = PAPI_NULL;
     long_long values[1] = {(long_long) 0};
@@ -45,8 +43,8 @@ int main(int argc, char *argv[]) {
     start_cycles = rdtsc();
 
     //START ACTUAL CODE
-    for (int i = 0; i < numLoops; i++) {
-        double square2 = pow(x, 2);
+    for (int i = 1; i <= numLoops; i++) {
+        sum += i;
     }
     //END ACTUAL CODE
 
@@ -60,8 +58,6 @@ int main(int argc, char *argv[]) {
     printf("%llu\n", end_cycles - start_cycles);
     if (strcmp(PAPI_Event, "none") != 0){
         printf("%lld\n", values[0]);}
-
-
 
     return 0;
 }
