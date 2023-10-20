@@ -7,6 +7,10 @@
         "utility": "c",
         "random": "c",
         "functional": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "deque": "c",
+        "list": "c",
+        "unordered_map": "c",
+        "vector": "c"
     }
 }

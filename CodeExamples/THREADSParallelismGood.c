@@ -27,11 +27,11 @@ void* calculate_partial_sum(void* arg) {
 
     // Measure execution time
     unsigned long long start_cycles, end_cycles;
-    int eventset = PAPI_NULL;
     long_long values[1] = {(long_long) 0};
+    int eventset = PAPI_NULL;
+    
     //PAPI INITIALIZATION
     if (strcmp(PAPI_Event, "none") != 0){
-    
         PAPI_create_eventset(&eventset);
         PAPI_add_named_event(eventset, PAPI_Event);
 
@@ -90,7 +90,6 @@ int main(int argc, char* argv[]) {
     }
 
     // Measure execution time
-    long_long values[1] = {(long_long) 0};
     //PAPI INITIALIZATION
     if (strcmp(PAPI_Event, "none") != 0){
         PAPI_library_init(PAPI_VER_CURRENT);

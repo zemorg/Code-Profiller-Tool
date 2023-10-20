@@ -65,7 +65,7 @@ def compile_and_run_with_timing(filename, num_loops, event, file_number):
             print((i+1), end=', ', flush=True)
     print("10. Done")
     print("-----------------------------------")
-    print(f"Test {filename} (File Nº{file_number}) with {num_loops} loops/size:")
+    print(f"Test {filename} (File Nº{file_number}) with {num_loops} loops/array size:")
     print(f"Average Clock Cycles:", totalaverage1 / NUM_RUNS)
     if (event in [0, 1, 2]):
         print(f"Average {event_name}:", totalaverage2 / NUM_RUNS)
@@ -110,7 +110,7 @@ def main():
                 file_number = int(input())
 
                 if 1 <= file_number <= num_files:
-                    print("Enter the number of loops for the selected file: ")
+                    print("Enter the number of loops/array size for the selected file: ")
                     num_loops = int(input())
                     if (num_loops > 0):
                         print("Select the event to monitor during execution (clock cycles are always monitored, press 0 for clock cycles only): ")

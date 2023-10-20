@@ -60,6 +60,8 @@ def main():
                         print(f"File '{selected_filename}' not found.")
                 else:
                     print("Invalid file number. Please select a valid file.")
+        elif choice == 3:
+            exit(0)
 
 
 if __name__ == "__main__":
